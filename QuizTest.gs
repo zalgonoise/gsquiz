@@ -1,9 +1,7 @@
 const url = `` // a (string) complete URL to pointing a sheets document
 
-function TestQuiz() {  
-  q = new Quiz(url)
-
-  console.log(q.BuildForms())
+function TestQuiz() {
+  console.log(new Quiz(url))
 }
 
 function TestSheetsData() {
