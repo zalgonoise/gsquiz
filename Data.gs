@@ -31,7 +31,14 @@ class SheetsData {
       var values = range.getValues();
 
       for (var i = 0; i < values.length; i++) {
-        if ((values[i][0] != "") && (values[i][5] != "")) {
+        if (
+          (values[i][0] != "") && (   // question must not be empty
+              (values[i][5] != "") || //
+              (values[i][6] != "") || // one of the correct answer
+              (values[i][7] != "") || // fields must be populated
+              (values[i][8] != "")
+            )
+          ) {
 
           var qs = [];
           for (var q = 1; q < 5 ; q++) {
@@ -40,7 +47,18 @@ class SheetsData {
             }
           }
 
-          var question = new Question(values[i][0], qs, values[i][5])
+          var as = [];
+          for (var a = 5; q < 9 ; q++) {
+            if (values[i][q] != "") {
+              as.push(values[i][q])
+            }
+          }
+          var points = 1;
+          if (values[i][9] != "") {
+            points = values[i][9]
+          }
+
+          var question = new Question(values[i][0], qs, as, points)
           this.questions.push(question)
         }
       }
