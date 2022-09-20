@@ -5,7 +5,7 @@ const baseSlidesID = ""
 // baseFolderID is the ID of a Drive folder where the new Forms document should be moved
 const baseFolderID = ""
 // maxRange is the maximum range to scan in a Sheets document to retrieve questions and answers
-const maxRange = "A1:F30"
+const maxRange = "A2:J31"
 // baseTitle is the base title of the document
 const baseTitle = "The Quizzz"
 // sep is a basic separator
@@ -85,13 +85,13 @@ class Quiz {
         
         var choices = [];
         q.answers.forEach(function(ans) {
-          choices.push(item.createChoice(ans, (ans == q.correctAns)))
+          choices.push(item.createChoice(ans, (q.correctAns.includes(ans))))
         })
         item.setChoices(choices)
         item.setFeedbackForCorrect(FormApp.createFeedback().setText(feedbackOK).build())
         item.setFeedbackForIncorrect(FormApp.createFeedback().setText(feedbackNOK).build())
-        item.setPoints(1)
-        item.createResponse(q.correctAns)
+        item.setPoints(q.points)
+        // item.createResponse(q.correctAns.join(", "))
 
         form.addPageBreakItem()
       })
@@ -164,7 +164,7 @@ class Quiz {
         var ansSlide = ppt.appendSlide(answerCopy)
         var qBody = "\n" + q.question + "\n"
         q.answers.forEach(function(a, idx) {
-          if (a == q.correctAns) {
+          if (q.correctAns.includes(a)) {
             qBody += ansIndex[idx] +  a + "\n"
           }
         })
