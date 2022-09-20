@@ -9,9 +9,10 @@ class Question {
    * question
    * @param {string} correctAns - the right answer, present in answers
    */
-  constructor(question, answers, correctAns) {
+  constructor(question, answers, correctAns, points) {
     this.question = question;
     this.answers = answers;
     this.correctAns = correctAns;
+    this.points = points;
   }
 }
