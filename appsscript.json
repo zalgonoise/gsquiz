@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [
+      {
+        "menuName": "Generate Quiz",
+        "functionName": "generateQuiz",
+        "defaultShortcut": "Ctrl+Alt+s"
+      },
+      {
+        "menuName": "Reset",
+        "functionName": "resetTemplate",
+        "defaultShortcut": "Ctrl+Shift+x"
+      }
+    ]
+  }
+}
