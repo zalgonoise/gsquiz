@@ -11,15 +11,9 @@ class SheetsData {
    * Col. F will be a copy of the correct answer. Must match one of the provided answers 
    * 
    * It returns an array of Question, based on the Sheets input
-   * 
-   * @param {string} sheetsURL sheetsURL - the URL to the Sheets document 
-   * containing the questions and answers.
    */
-  constructor(sheetsURL) {
-    this.url = sheetsURL;
-    this.user = Session.getActiveUser();
-    this.file = SpreadsheetApp.openByUrl(sheetsURL);
-    this.sheet = this.file.getSheets()[0];
+  constructor() {
+    this.sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     this.questions = [];
 
     /**
@@ -32,10 +26,10 @@ class SheetsData {
 
       for (var i = 0; i < values.length; i++) {
         if (
-          (values[i][0] != "") && (   // question must not be empty
-              (values[i][5] != "") || //
-              (values[i][6] != "") || // one of the correct answer
-              (values[i][7] != "") || // fields must be populated
+          (values[i][0] != "") && ( // question must not be empty
+              (values[i][5] != "") || // one of the correct answer
+              (values[i][6] != "") || // fields must be populated
+              (values[i][7] != "") ||
               (values[i][8] != "")
             )
           ) {
@@ -65,6 +59,6 @@ class SheetsData {
       return this.questions
     }
   
-    return this.Read()
+    return this
   }
 }
