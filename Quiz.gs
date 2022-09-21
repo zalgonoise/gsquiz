@@ -2,10 +2,14 @@
 const baseFormID = ""
 // baseSlidesID is the ID of a Forms document that will serve as a template to the created form
 const baseSlidesID = ""
-// baseFolderID is the ID of a Drive folder where the new Forms document should be moved
-const baseFolderID = ""
 // maxRange is the maximum range to scan in a Sheets document to retrieve questions and answers
-const maxRange = "A2:J31"
+const maxRange = "A6:J36"
+// themeRange is the cell where the quiz theme is found
+const themeRange = "B2"
+// timezone is a Utilities.formatDate helper to set the local timezone
+const timezone = "GMT+2"
+// dateFormat is a format string for Utilities.formatDate
+const dateFormat = "yyyy-MM-dd"
 // baseTitle is the base title of the document
 const baseTitle = "The Quizzz"
 // sep is a basic separator
@@ -25,26 +29,29 @@ class Quiz {
    * The output will be an array of strings containing the Forms URL,
    * Forms Edit URL and the 
    * Forms document ID.
-   * 
-   * @param {string} sheetsURL sheetsURL - the URL to the Sheets document 
-   * containing the questions and answers. It should contain 6 columns
-   * where:
-   *   - col. A: question
-   *   - col. B-E: 4 possible answers; leave blank when less than 4
-   *   - col. F: index (0-3) of the right answer out of the list of answers
    */
-  constructor(sheetsURL, themeDescription) {
-    this.url = sheetsURL;
-    this.questions = new SheetsData(sheetsURL); 
-    this.theme = themeDescription;
+  constructor() {
+    this.questions = new SheetsData().Read(); 
+    this.theme = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getRange(themeRange).getValue().toString();
+    this.newFolderID;
     this.form;
-    this.dateF;
-    this.title;
+    this.dateF = Utilities.formatDate(new Date(), timezone, dateFormat);
+    this.title = baseTitle + spSep + this.dateF;
     this.out = new QuizOutput();
 
-      var d = new Date();
-      this.dateF = d.getFullYear() + sep + d.getMonth() + sep + d.getDate();
-      this.title = baseTitle + spSep + this.dateF;
+    this.SetBaseFolder = function() {
+      var parent = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getParents().next().getParents().next()
+      var folders = parent.getFolders()
+      while (folders.hasNext()) {
+        var folder = folders.next()
+        if (folder.getName() == this.dateF) {
+          return folder.getId()
+        }
+      }
+      var newF = parent.createFolder(this.dateF).getId()
+      return   newF
+    }
+    this.newFolderID = this.SetBaseFolder();
 
     /**
      * BuildForms method will use the input Sheets data to build a Forms
@@ -56,7 +63,7 @@ class Quiz {
     this.BuildForms = function() {
       var form;
 
-      if ((baseFormID == "") || (baseFolderID == "")) {
+      if (baseFormID == "") {
         form = FormApp.create(this.title)
                       .setTitle(this.title)
                       .setDescription(this.theme)
@@ -68,7 +75,7 @@ class Quiz {
       } else {
         var copy = DriveApp.getFileById(baseFormID).makeCopy()
         copy.setName(this.title)
-        copy.moveTo(DriveApp.getFolderById(baseFolderID))
+        copy.moveTo(DriveApp.getFolderById(this.newFolderID))
 
         form = FormApp.openById(copy.getId())
                           .setTitle(this.title)
@@ -91,7 +98,6 @@ class Quiz {
         item.setFeedbackForCorrect(FormApp.createFeedback().setText(feedbackOK).build())
         item.setFeedbackForIncorrect(FormApp.createFeedback().setText(feedbackNOK).build())
         item.setPoints(q.points)
-        // item.createResponse(q.correctAns.join(", "))
 
         form.addPageBreakItem()
       })
@@ -125,18 +131,16 @@ class Quiz {
     this.BuildSlides = function() {
       var ppt;
   
-      if ((baseSlidesID == "") || (baseFolderID == "")) {
-        var errs = []
-        if (baseSlidesID == "") {errs.push("no slides template provided")}
-        if (baseFolderID == "") {errs.push("no base folder provided")}
-        if (errs.length == 1) {
-          errs.push("") // comply with expected array lenght
+      if (baseSlidesID == "") {
+        var err;
+        if (baseSlidesID == "") {
+          err = "no slides template provided"
         }
-        return errs
+        return err
       } 
       var copy = DriveApp.getFileById(baseSlidesID).makeCopy()
       copy.setName(this.title)
-      copy.moveTo(DriveApp.getFolderById(baseFolderID))
+      copy.moveTo(DriveApp.getFolderById(this.newFolderID))
 
       ppt = SlidesApp.openById(copy.getId())
       var items = ppt.getSlides()
